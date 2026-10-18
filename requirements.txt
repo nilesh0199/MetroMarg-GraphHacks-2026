@@ -1,0 +1,6 @@
+falkordb
+fastapi
+uvicorn
+google-genai
+mcp
+rich

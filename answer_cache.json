@@ -1,0 +1,432 @@
+{
+ "how do i get to jantar mantar from chandni chowk?": {
+  "answer": "Chandni Chowk is not in the graph. As a result, route details and travel options to Jantar Mantar cannot be provided.",
+  "results": [
+   {
+    "outcome": "unknown_station",
+    "asked": [
+     "Chandni Chowk"
+    ]
+   }
+  ],
+  "trace": [
+   {
+    "tool": "plan_trip_to_place",
+    "args": "{'from_station': 'Chandni Chowk', 'place': 'Jantar Mantar'}",
+    "ms": 312,
+    "outcome": "unknown_station"
+   }
+  ],
+  "queries": [
+   {
+    "text": "MATCH (s:Station {name: $name}) RETURN s.name",
+    "params": {
+     "name": "Chandni Chowk"
+    }
+   },
+   {
+    "text": "MATCH (s:Station)\nWHERE toLower(s.name) = toLower($name)\n   OR toLower(s.alias) = toLower($name)\n   OR toLower(s.name) CONTAINS toLower($name)\n   OR toLower($name) CONTAINS toLower(s.name)\nRETURN DISTINCT s.name",
+    "params": {
+     "name": "Chandni Chowk"
+    }
+   }
+  ]
+ },
+ "how do i get to jantar mantar from sarojini nagar?": {
+  "answer": "Sarojini Nagar is not in the graph. Consequently, a route to Jantar Mantar from this station cannot be provided.",
+  "results": [
+   {
+    "outcome": "unknown_station",
+    "asked": [
+     "Sarojini Nagar"
+    ]
+   }
+  ],
+  "trace": [
+   {
+    "tool": "plan_trip_to_place",
+    "args": "{'from_station': 'Sarojini Nagar', 'place': 'Jantar Mantar'}",
+    "ms": 13,
+    "outcome": "unknown_station"
+   }
+  ],
+  "queries": [
+   {
+    "text": "MATCH (s:Station {name: $name}) RETURN s.name",
+    "params": {
+     "name": "Sarojini Nagar"
+    }
+   },
+   {
+    "text": "MATCH (s:Station)\nWHERE toLower(s.name) = toLower($name)\n   OR toLower(s.alias) = toLower($name)\n   OR toLower(s.name) CONTAINS toLower($name)\n   OR toLower($name) CONTAINS toLower(s.name)\nRETURN DISTINCT s.name",
+    "params": {
+     "name": "Sarojini Nagar"
+    }
+   }
+  ]
+ },
+ "2026-10-10-jantar-mantar|how do i get to jantar mantar from chandni chowk?": {
+  "answer": "Normally, you take the metro from Chandni Chowk via Chawri Bazar, New Delhi, Rajiv Chowk, Patel Chowk, and Central Secretariat to Janpath, followed by about a 4-minute walk to Jantar Mantar. Due to station closures, the detour requires walking directly from Chandni Chowk for about 60 minutes. This adds about 42.3 extra minutes to your journey.",
+  "results": [
+   {
+    "outcome": "answered_with_path",
+    "from": "Chandni Chowk",
+    "place": "Jantar Mantar",
+    "closed": [
+     "Patel Chowk",
+     "Netaji Subash Place",
+     "Maujpur - Babarpur",
+     "Karol Bagh",
+     "Rajendra Place",
+     "Jafrabad",
+     "Azadpur",
+     "Barakhamba",
+     "RK Ashram Marg",
+     "Khan Market",
+     "Vishwavidyalaya",
+     "Jhandewalan",
+     "Shahdara",
+     "Jorbagh",
+     "Jangpura",
+     "Haiderpur Badli Mor",
+     "Dilli Haat - INA",
+     "Seelam Pur",
+     "Central Secretariat",
+     "Rithala",
+     "New Delhi",
+     "Kashmere Gate",
+     "Shivaji Stadium",
+     "Chawri Bazar",
+     "Mandi House",
+     "Welcome",
+     "Lajpat Nagar",
+     "Majlis Park",
+     "Inderlok",
+     "Udyog Bhawan",
+     "Jama Masjid",
+     "ITO",
+     "Rajiv Chowk",
+     "Jahangirpuri",
+     "Guru Tegh Bahadur Nagar",
+     "Jamia Millia Islamia",
+     "Supreme Court",
+     "Hauz Khas",
+     "Indraprastha",
+     "Lok Kalyan Marg",
+     "Janpath",
+     "Delhi Gate",
+     "Ashram"
+    ],
+    "normal": {
+     "station": "Janpath",
+     "via": [
+      "Chandni Chowk",
+      "Chawri Bazar",
+      "New Delhi",
+      "Rajiv Chowk",
+      "Patel Chowk",
+      "Central Secretariat",
+      "Janpath"
+     ],
+     "ride": 13.7,
+     "walk": 4,
+     "minutes": 17.7
+    },
+    "detour": {
+     "station": "Chandni Chowk",
+     "via": [
+      "Chandni Chowk"
+     ],
+     "ride": 0,
+     "walk": 60,
+     "minutes": 60
+    },
+    "extra_minutes": 42.3
+   }
+  ],
+  "trace": [
+   {
+    "tool": "plan_trip_to_place",
+    "args": "{'from_station': 'Chandni Chowk', 'place': 'Jantar Mantar'}",
+    "ms": 682,
+    "outcome": "answered_with_path"
+   }
+  ],
+  "queries": [
+   {
+    "text": "MATCH (s:Station {name: $name}) RETURN s.name",
+    "params": {
+     "name": "Chandni Chowk"
+    }
+   },
+   {
+    "text": "MATCH (p:Place {name: $place})-[n:NEAR]->(s:Station)\nOPTIONAL MATCH (c:Closure)-[:CLOSES]->(s)\nRETURN s.name AS station, n.walk_min AS walk_min,\n       c.id IS NOT NULL AS closed\nORDER BY n.walk_min",
+    "params": {
+     "place": "Jantar Mantar"
+    }
+   },
+   {
+    "text": "MATCH (:Closure)-[x:CLOSES]->(s:Station)\nRETURN DISTINCT s.name, x.interchange_open",
+    "params": null
+   },
+   {
+    "text": "MATCH path = (x:Station {name: $a})-[:NEXT*1..3]->(y:Station {name: $b})\nRETURN [n IN nodes(path) | n.name] AS via,\n       reduce(t = 0, r IN relationships(path) | t + r.minutes) AS minutes\nORDER BY minutes\nLIMIT 1",
+    "params": {
+     "a": "Chandni Chowk",
+     "b": "Janpath",
+     "no_transfer": []
+    }
+   },
+   {
+    "text": "MATCH path = (x:Station {name: $a})-[:NEXT*1..3]->(y:Station {name: $b})\nWHERE all(i IN range(0, size(relationships(path)) - 2)\n          WHERE NOT (nodes(path)[i + 1].name IN $no_transfer)\n             OR relationships(path)[i].line = relationships(path)[i + 1].line)\nRETURN [n IN nodes(path) | n.name] AS via,\n       reduce(t = 0, r IN relationships(path) | t + r.minutes) AS minutes\nORDER BY minutes\nLIMIT 1",
+    "params": {
+     "a": "Chandni Chowk",
+     "b": "Lal Quila",
+     "no_transfer": [
+      "New Delhi"
+     ]
+    }
+   }
+  ]
+ },
+ "2026-10-10-jantar-mantar|which are the most connected stations, and were they closed?": {
+  "answer": "The most connected stations ranked by PageRank are Kashmere Gate, Sikanderpur, Azadpur, Kalkaji Mandir, Welcome, Hauz Khas, Rajouri Garden, Netaji Subash Place, Mayur Vihar-I, and Dilli Haat - INA. Among these top ten, six stations were closed: Kashmere Gate, Azadpur, Welcome, Hauz Khas, Netaji Subash Place, and Dilli Haat - INA. The remaining stations\u2014Sikanderpur, Kalkaji Mandir, Rajouri Garden, and Mayur Vihar-I\u2014were not closed.",
+  "results": [
+   {
+    "outcome": "answered_by_algorithm",
+    "algorithm": "PageRank",
+    "ranking": [
+     {
+      "rank": 1,
+      "station": "Kashmere Gate",
+      "score": 0.0076,
+      "closed": true
+     },
+     {
+      "rank": 2,
+      "station": "Sikanderpur",
+      "score": 0.0068,
+      "closed": false
+     },
+     {
+      "rank": 3,
+      "station": "Azadpur",
+      "score": 0.0068,
+      "closed": true
+     },
+     {
+      "rank": 4,
+      "station": "Kalkaji Mandir",
+      "score": 0.0064,
+      "closed": false
+     },
+     {
+      "rank": 5,
+      "station": "Welcome",
+      "score": 0.0064,
+      "closed": true
+     },
+     {
+      "rank": 6,
+      "station": "Hauz Khas",
+      "score": 0.0064,
+      "closed": true
+     },
+     {
+      "rank": 7,
+      "station": "Rajouri Garden",
+      "score": 0.0064,
+      "closed": false
+     },
+     {
+      "rank": 8,
+      "station": "Netaji Subash Place",
+      "score": 0.0064,
+      "closed": true
+     },
+     {
+      "rank": 9,
+      "station": "Mayur Vihar-I",
+      "score": 0.0063,
+      "closed": false
+     },
+     {
+      "rank": 10,
+      "station": "Dilli Haat - INA",
+      "score": 0.0062,
+      "closed": true
+     }
+    ],
+    "closed_in_top": 6
+   }
+  ],
+  "trace": [
+   {
+    "tool": "most_connected_stations",
+    "args": "()",
+    "ms": 32,
+    "outcome": "answered_by_algorithm"
+   }
+  ],
+  "queries": [
+   {
+    "text": "CALL algo.pageRank('Station', 'NEXT')\nYIELD node, score\nRETURN node.name AS station, score\nORDER BY score DESC\nLIMIT 10",
+    "params": null
+   },
+   {
+    "text": "MATCH (:Closure)-[:CLOSES]->(s:Station) RETURN DISTINCT s.name",
+    "params": null
+   }
+  ]
+ },
+ "2026-10-10-jantar-mantar|what are the top 5 most connected stations?": {
+  "answer": "The top 5 most connected stations based on PageRank are Kashmere Gate (rank 1), Sikanderpur (rank 2), Azadpur (rank 3), Kalkaji Mandir (rank 4), and Welcome (rank 5). Among these, Kashmere Gate, Azadpur, and Welcome are closed, while Sikanderpur and Kalkaji Mandir are open.",
+  "results": [
+   {
+    "outcome": "answered_by_algorithm",
+    "algorithm": "PageRank",
+    "ranking": [
+     {
+      "rank": 1,
+      "station": "Kashmere Gate",
+      "score": 0.0076,
+      "closed": true
+     },
+     {
+      "rank": 2,
+      "station": "Sikanderpur",
+      "score": 0.0068,
+      "closed": false
+     },
+     {
+      "rank": 3,
+      "station": "Azadpur",
+      "score": 0.0068,
+      "closed": true
+     },
+     {
+      "rank": 4,
+      "station": "Kalkaji Mandir",
+      "score": 0.0064,
+      "closed": false
+     },
+     {
+      "rank": 5,
+      "station": "Welcome",
+      "score": 0.0064,
+      "closed": true
+     }
+    ],
+    "closed_in_top": 3
+   }
+  ],
+  "trace": [
+   {
+    "tool": "most_connected_stations",
+    "args": "{'limit': 5}",
+    "ms": 6,
+    "outcome": "answered_by_algorithm"
+   }
+  ],
+  "queries": [
+   {
+    "text": "CALL algo.pageRank('Station', 'NEXT')\nYIELD node, score\nRETURN node.name AS station, score\nORDER BY score DESC\nLIMIT 5",
+    "params": null
+   },
+   {
+    "text": "MATCH (:Closure)-[:CLOSES]->(s:Station) RETURN DISTINCT s.name",
+    "params": null
+   }
+  ]
+ },
+ "2026-10-10-jantar-mantar|how many of the 10 most connected stations were shut during the closure?": {
+  "answer": "Out of the 10 most connected stations, 6 were shut during the closure. These closed stations are Kashmere Gate, Azadpur, Welcome, Hauz Khas, Netaji Subash Place, and Dilli Haat - INA.",
+  "results": [
+   {
+    "outcome": "answered_by_algorithm",
+    "algorithm": "PageRank",
+    "ranking": [
+     {
+      "rank": 1,
+      "station": "Kashmere Gate",
+      "score": 0.0076,
+      "closed": true
+     },
+     {
+      "rank": 2,
+      "station": "Sikanderpur",
+      "score": 0.0068,
+      "closed": false
+     },
+     {
+      "rank": 3,
+      "station": "Azadpur",
+      "score": 0.0068,
+      "closed": true
+     },
+     {
+      "rank": 4,
+      "station": "Kalkaji Mandir",
+      "score": 0.0064,
+      "closed": false
+     },
+     {
+      "rank": 5,
+      "station": "Welcome",
+      "score": 0.0064,
+      "closed": true
+     },
+     {
+      "rank": 6,
+      "station": "Hauz Khas",
+      "score": 0.0064,
+      "closed": true
+     },
+     {
+      "rank": 7,
+      "station": "Rajouri Garden",
+      "score": 0.0064,
+      "closed": false
+     },
+     {
+      "rank": 8,
+      "station": "Netaji Subash Place",
+      "score": 0.0064,
+      "closed": true
+     },
+     {
+      "rank": 9,
+      "station": "Mayur Vihar-I",
+      "score": 0.0063,
+      "closed": false
+     },
+     {
+      "rank": 10,
+      "station": "Dilli Haat - INA",
+      "score": 0.0062,
+      "closed": true
+     }
+    ],
+    "closed_in_top": 6
+   }
+  ],
+  "trace": [
+   {
+    "tool": "most_connected_stations",
+    "args": "{'limit': 10}",
+    "ms": 7,
+    "outcome": "answered_by_algorithm"
+   }
+  ],
+  "queries": [
+   {
+    "text": "CALL algo.pageRank('Station', 'NEXT')\nYIELD node, score\nRETURN node.name AS station, score\nORDER BY score DESC\nLIMIT 10",
+    "params": null
+   },
+   {
+    "text": "MATCH (:Closure)-[:CLOSES]->(s:Station) RETURN DISTINCT s.name",
+    "params": null
+   }
+  ]
+ }
+}

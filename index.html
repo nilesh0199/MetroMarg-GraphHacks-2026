@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MetroMarg: getting to Jantar Mantar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;600;800&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #EDF0F5;
+    --surface: #FFFFFF;
+    --ink: #14213D;
+    --muted: #566074;
+    --rule: #C8D0DD;
+    --closed: #B3261E;
+    --open: #17704F;
+    --accent: #1B4DB1;
+    --font: "Overpass", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: var(--font); font-size: 1rem; line-height: 1.55;
+  }
+  main { max-width: 960px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+  .brand {
+    margin: 0 0 .75rem; font-weight: 800; font-size: .95rem; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  .brand span { letter-spacing: 0; text-transform: none; margin-left: .5rem; color: var(--muted); font-weight: 600; }
+  h1 {
+    font-size: clamp(2rem, 5.2vw, 3.3rem); font-weight: 800; line-height: 1.04;
+    letter-spacing: -0.02em; margin: 0 0 1rem; max-width: 22ch; text-wrap: balance;
+  }
+  .lede { max-width: 60ch; color: var(--muted); margin: 0 0 2rem; }
+  h3 { font-size: 1.05rem; font-weight: 800; margin: 0 0 .5rem; }
+
+  form { display: flex; gap: .5rem; flex-wrap: wrap; }
+  input[type=text] {
+    flex: 1 1 22rem; font: inherit; padding: .8rem 1rem; color: var(--ink);
+    background: var(--surface); border: 2px solid var(--ink); border-radius: 4px;
+  }
+  button {
+    font: inherit; cursor: pointer; border-radius: 4px;
+  }
+  .go {
+    padding: .8rem 1.4rem; font-weight: 800; color: #fff; background: var(--ink);
+    border: 2px solid var(--ink);
+  }
+  .go:disabled { opacity: .6; cursor: progress; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  .examples { display: flex; flex-wrap: wrap; gap: .5rem; margin: .9rem 0 2.2rem; padding: 0; list-style: none; }
+  .examples button {
+    padding: .35rem .75rem; font-size: .9rem; color: var(--ink);
+    background: transparent; border: 1px solid var(--rule);
+  }
+  .examples button:hover { border-color: var(--ink); }
+
+  .answer {
+    font-size: 1.25rem; line-height: 1.5; max-width: 62ch; margin: 0 0 2rem;
+    padding-left: 1rem; border-left: 4px solid var(--accent); white-space: pre-wrap;
+  }
+  .error { color: var(--closed); font-weight: 600; }
+  .cached {
+    margin: 0 0 1rem; padding: .5rem .9rem; color: var(--ink); font-size: .95rem;
+    background: var(--surface); border: 1px dashed var(--muted); border-radius: 4px;
+  }
+  .busy { color: var(--muted); }
+
+  .block { margin: 0 0 2rem; }
+  .muted { color: var(--muted); }
+
+  /* the two tracks */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin: 0 0 2rem; }
+  .col { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1.1rem 1.25rem 1.25rem; }
+  .col h3 { margin: 0; color: var(--muted); font-weight: 600; }
+  .total { font-size: 2.6rem; font-weight: 800; line-height: 1.1; margin: .25rem 0 0; letter-spacing: -0.02em; }
+  .split { margin: 0 0 .25rem; color: var(--muted); }
+  .delta { margin: 0 0 1rem; font-weight: 800; }
+  .delta.worse { color: var(--closed); }
+  .delta.same { color: var(--open); }
+
+  .track { list-style: none; margin: 1rem 0 0; padding: 0; }
+  .stop { position: relative; padding: 0 0 1rem 2.1rem; min-height: 1.6rem; }
+  .stop::before {
+    content: ""; position: absolute; left: 8px; top: 0; bottom: 0; width: 3px; background: var(--ink);
+  }
+  .stop:first-child::before { top: 10px; }
+  .stop:last-child::before { bottom: auto; height: 10px; }
+  .stop:only-child::before { display: none; }
+  .stop.walk::before { background: none; border-left: 3px dashed var(--muted); width: 0; }
+  .stop.walk:last-child::before { height: 10px; }
+  .dot {
+    position: absolute; left: 1px; top: 3px; width: 17px; height: 17px; border-radius: 50%;
+    background: var(--surface); border: 3px solid var(--ink);
+  }
+  .dot.closed { border-color: var(--closed); }
+  .dot.closed::after {
+    content: "\00d7"; position: absolute; inset: -4px 0 0 0; text-align: center;
+    color: var(--closed); font-weight: 800; line-height: 17px; font-size: 16px;
+  }
+  .dot.walkdot { border-style: dashed; border-color: var(--muted); }
+  .name { font-weight: 600; }
+  .note { display: block; font-size: .85rem; color: var(--muted); }
+  .stop.is-closed .name { color: var(--closed); }
+
+  /* stations near a place */
+  .bars { display: grid; gap: .45rem; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 1rem 1.25rem; }
+  .bar-row { display: grid; grid-template-columns: minmax(8rem, 12rem) 1fr 8.5rem; gap: .75rem; align-items: center; }
+  .bar-track { height: 10px; background: var(--paper); border-radius: 2px; }
+  .bar-fill { height: 100%; border-radius: 2px; background: var(--open); }
+  .bar-fill.closed { background: var(--closed); }
+  .status.closed { color: var(--closed); font-weight: 600; }
+  .status.open { color: var(--open); font-weight: 600; }
+
+  table.grid { border-collapse: collapse; width: 100%; background: var(--surface); border: 1px solid var(--rule); }
+  .grid th, .grid td { text-align: left; padding: .45rem .75rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  .grid th { font-weight: 800; }
+  .grid td.num, .grid th.num { text-align: right; }
+
+  .note-box { background: var(--surface); border: 1px solid var(--rule); border-left: 4px solid var(--closed); border-radius: 6px; padding: 1rem 1.25rem; }
+  .note-box p { margin: .25rem 0; }
+
+  ul.trace { margin: 0; padding-left: 1.1rem; font-family: var(--mono); font-size: .85rem; }
+  details { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: .75rem 1.25rem; }
+  summary { cursor: pointer; font-weight: 800; }
+  pre {
+    margin: .75rem 0 0; padding: 1rem; overflow-x: auto; font-family: var(--mono);
+    font-size: .8rem; line-height: 1.5; background: #F6F8FB; border: 1px solid var(--rule); border-radius: 4px;
+  }
+
+  footer { margin-top: 3rem; padding-top: 1.25rem; border-top: 1px solid var(--rule); color: var(--muted); font-size: .9rem; max-width: 70ch; }
+  footer a { color: var(--accent); }
+
+  .info-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.5rem; height: 1.5rem; margin-left: .45rem; padding: 0; vertical-align: middle;
+    font: italic 800 .95rem/1 var(--font); color: var(--accent); background: var(--surface);
+    border: 1.5px solid var(--accent); border-radius: 50%;
+  }
+  .info-btn:hover, .info-btn[aria-expanded="true"] { background: var(--accent); color: #fff; }
+  .info-panel {
+    max-width: 62ch; margin: -.9rem 0 2rem; padding: .9rem 1.25rem;
+    background: var(--surface); border: 1px solid var(--rule);
+    border-left: 4px solid var(--accent); border-radius: 6px;
+  }
+  .info-panel[hidden] { display: none; }
+  .info-panel h3 { margin-bottom: .25rem; }
+  .info-panel p { margin: .45rem 0; }
+  .info-panel .info-when { font-weight: 800; }
+  .info-panel a { color: var(--accent); }
+
+  @media (max-width: 720px) {
+    .compare { grid-template-columns: 1fr; }
+    .bar-row { grid-template-columns: 1fr 6rem; }
+    .bar-track { grid-column: 1 / -1; order: 3; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <p class="brand">MetroMarg <span lang="hi">मेट्रो मार्ग</span></p>
+  <h1>Getting to Jantar Mantar when the metro stations are shut</h1>
+  <p class="lede">
+    Ask how the 9 to 10 October 2026 closure of 45 Delhi metro stations changed a journey.
+    Every answer comes from a graph of the Delhi Metro. The route and the queries are shown underneath.
+    <button type="button" id="info-btn" class="info-btn" aria-expanded="false"
+            aria-controls="info-panel" aria-label="About this closure" title="About this closure">i</button>
+  </p>
+  <div id="info-panel" class="info-panel" role="region" aria-label="About this closure" hidden></div>
+
+  <form id="ask-form">
+    <input id="question" type="text" autocomplete="off"
+           aria-label="Your question" placeholder="How do I get to Jantar Mantar from Chandni Chowk?">
+    <button class="go" id="go" type="submit">Ask</button>
+  </form>
+  <ul class="examples" id="examples"></ul>
+
+  <div id="output" aria-live="polite"></div>
+
+  <footer>
+    Closure data comes from DMRC's update of 9 October 2026 as reported by
+    <a href="https://www.businesstoday.in/india/story/dmrc-issues-revised-metro-closure-update-ahead-of-oct-10-check-affected-stations-560777-2026-10-09">Business Today</a>,
+    and a Delhi Police proposal reported by
+    <a href="https://newsonair.gov.in/delhi-police-proposes-closure-of-entry-and-exit-gates-at-57-metro-stations-from-9-pm/">News On AIR</a>.
+    Entry and exit were closed at 45 stations; DMRC said passengers could still change trains at all of them
+    except New Delhi. Ride times come from the DMRC timetable on Delhi Open Transit Data (Department of Transport, GNCTD; 2023 version). This project is not endorsed by DMRC or the Department of Transport. Walking times are estimates from
+    straight-line distance. Buses, taxis and other road transport are not modelled.
+  </footer>
+</main>
+
+<script>
+const EXAMPLES = [
+  "How do I get to Jantar Mantar from Chandni Chowk?",
+  "Which stations near Jantar Mantar are open?",
+  "How do I get to Jantar Mantar from Rajiv Chowk?",
+  "How do I get from Chandni Chowk to Sarojini Nagar?",
+  "Which stations are within 1 hop of Patel Chowk?",
+  "Which stations are within 4 hops of Patel Chowk?",
+  "Which are the most connected stations, and were they closed?",
+  "How do I get to Jantar Mantar from Atlantis Central?"
+];
+
+const $ = (s) => document.querySelector(s);
+
+function h(tag, cls, ...kids) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  kids.flat().forEach((k) => {
+    if (k === null || k === undefined) return;
+    e.append(k.nodeType ? k : document.createTextNode(String(k)));
+  });
+  return e;
+}
+const min = (x) => (Math.round(x * 10) / 10) + " min";
+
+/* ---- the two tracks: same trip, normally vs during the closure ---- */
+function track(via, closedSet, walkLabel, duringClosure) {
+  const ol = h("ol", "track");
+  via.forEach((s, i) => {
+    const first = i === 0, last = i === via.length - 1;
+    const closed = closedSet.has(s);
+    const notes = [];
+    if (first) notes.push("start");
+    if (last) notes.push(walkLabel ? "get off here" : "end");
+    if (closed && !duringClosure) notes.push("shut during the closure");
+    if (closed && duringClosure && !first && !last) notes.push("closed: the train passes through");
+    ol.append(h("li", "stop" + (closed ? " is-closed" : ""),
+      h("span", "dot" + (closed ? " closed" : "")),
+      h("span", "name", s),
+      notes.length ? h("span", "note", notes.join(", ")) : null));
+  });
+  if (walkLabel) {
+    ol.append(h("li", "stop walk", h("span", "dot walkdot"), h("span", "name", walkLabel)));
+  }
+  return ol;
+}
+
+function column(title, o, r, showClosures, extra) {
+  const closedSet = new Set(r.closed || []);
+  const walkLabel = r.place ? `Walk to ${r.place}, about ${o.walk} min` : null;
+  const parts = [
+    h("h3", null, title),
+    h("p", "total", min(o.minutes)),
+    h("p", "split", r.place ? `${min(o.ride)} by metro + ${o.walk} min walk` : "by metro")
+  ];
+  if (extra !== undefined) {
+    parts.push(h("p", "delta " + (extra > 0 ? "worse" : "same"),
+      extra > 0 ? `${min(extra)} longer` : "No change"));
+  }
+  parts.push(track(o.via, closedSet, walkLabel, showClosures));
+  return h("section", "col", parts);
+}
+
+function compareView(r) {
+  const cols = [column("Normally", r.normal, r, false)];
+  if (r.detour) {
+    cols.push(column("During the closure", r.detour, r, true, r.extra_minutes));
+  } else {
+    cols.push(h("section", "col", h("h3", null, "During the closure"),
+      h("p", "muted", "No way to make this trip by metro in the graph.")));
+  }
+  return h("div", "compare", cols);
+}
+
+/* ---- what is affected near a station ---- */
+function impactView(r) {
+  const closed = new Set(r.closed || []);
+  const rows = [...r.affected].sort((a, b) => a.hops - b.hops || a.station.localeCompare(b.station));
+  const closedCount = rows.filter((a) => closed.has(a.station)).length;
+  const t = h("table", "grid",
+    h("thead", null, h("tr", null, h("th", null, "Station"), h("th", "num", "Hops"),
+      h("th", null, "Status"), h("th", null, "Route"))),
+    h("tbody", null, rows.map((a) =>
+      h("tr", null, h("td", null, a.station), h("td", "num", a.hops),
+        h("td", null, h("span", "status " + (closed.has(a.station) ? "closed" : "open"),
+          closed.has(a.station) ? "closed" : "open")),
+        h("td", null, a.via.join(" \u2192 "))))));
+  return h("section", "block",
+    h("h3", null, `Within ${r.depth} hop(s) of ${r.station}: ${rows.length} stations, ${closedCount} closed`), t);
+}
+
+function rankingView(r) {
+  const max = Math.max(...r.ranking.map((x) => x.score), 1e-9);
+  const rows = r.ranking.map((x) => h("div", "bar-row",
+    h("span", "name", `${x.rank}. ${x.station}`),
+    h("div", "bar-track", Object.assign(h("div", "bar-fill" + (x.closed ? " closed" : "")),
+      { style: `width:${Math.max(4, (x.score / max) * 100)}%` })),
+    h("span", null, `${x.score.toFixed(4)}, `,
+      h("span", "status " + (x.closed ? "closed" : "open"), x.closed ? "closed" : "open"))));
+  return h("section", "block",
+    h("h3", null, `Most connected stations (${r.algorithm})`),
+    h("div", "bars", rows),
+    h("p", "muted", `${r.closed_in_top} of these ${r.ranking.length} stations had entry and exit closed. DMRC said passengers could still change trains at closed stations other than New Delhi.`));
+}
+
+/* ---- stations near a place, as walking-time bars ---- */
+function placeView(r) {
+  const firstOpen = r.stations.findIndex((s) => !s.closed);
+  const shown = firstOpen === -1 ? r.stations : r.stations.slice(0, firstOpen + 3);
+  const max = Math.max(...shown.map((s) => s.walk_min), 1);
+  const rows = shown.map((s) => h("div", "bar-row",
+    h("span", "name", s.station),
+    h("div", "bar-track", Object.assign(h("div", "bar-fill" + (s.closed ? " closed" : "")),
+      { style: `width:${Math.max(4, (s.walk_min / max) * 100)}%` })),
+    h("span", null, `${s.walk_min} min walk, `,
+      h("span", "status " + (s.closed ? "closed" : "open"), s.closed ? "closed" : "open"))));
+  const more = r.stations.length - shown.length;
+  return h("section", "block", h("h3", null, `Stations near ${r.place}`), h("div", "bars", rows),
+    more > 0 ? h("p", "muted", `${more} more stations are further away.`) : null);
+}
+
+/* ---- everything else: unknown station, closed start, not in the graph ---- */
+const TITLES = {
+  unknown_station: "Station not in the graph",
+  endpoint_closed: "Entry and exit are closed there",
+  not_in_graph: "Not in the graph",
+  no_route_while_closed: "No route while closed"
+};
+function noteView(r) {
+  const box = h("section", "block note-box", h("h3", null, TITLES[r.outcome] || r.outcome));
+  if (r.asked) box.append(h("p", null, "Not found: " + r.asked.join(", ")));
+  if (r.note) box.append(h("p", null, r.note));
+  if (r.nearest_open) {
+    Object.entries(r.nearest_open).forEach(([name, opts]) => {
+      if (opts.length) {
+        box.append(h("p", null, `Nearest open stations to ${name}: ` +
+          opts.map((o) => `${o.station} (about ${o.walk_min} min walk)`).join(", ")));
+      }
+    });
+  }
+  return box;
+}
+
+function renderResult(r) {
+  if (r.normal && (r.place || r.from)) return compareView(r);
+  if (r.affected) return impactView(r);
+  if (r.stations) return placeView(r);
+  if (r.ranking) return rankingView(r);
+  return noteView(r);
+}
+
+function render(data) {
+  const out = $("#output");
+  out.replaceChildren();
+  if (data.error) {
+    out.append(h("p", "error", "The agent could not answer. " + data.error));
+    return;
+  }
+  if (data.cached) {
+    out.append(h("p", "cached",
+      "Showing a saved answer from earlier. The language model is unavailable right now."));
+  }
+  out.append(h("p", "answer", data.answer));
+  data.results.forEach((r) => out.append(renderResult(r)));
+
+  if (data.trace.length) {
+    out.append(h("section", "block", h("h3", null, "What the agent called"),
+      h("ul", "trace", data.trace.map((t) => h("li", null, `${t.tool}${t.args} \u00b7 ${t.ms} ms \u00b7 ${t.outcome}`)))));
+  }
+  if (data.queries.length) {
+    const code = data.queries.map((q) =>
+      q.text + (q.params ? "\n// params: " + JSON.stringify(q.params) : "")).join("\n\n");
+    out.append(h("details", "block", h("summary", null, "The graph queries behind this answer"), h("pre", null, code)));
+  }
+}
+
+function sourceLink(url) {
+  const a = h("a", null, new URL(url).hostname.replace("www.", ""));
+  a.href = url; a.target = "_blank"; a.rel = "noopener";
+  return a;
+}
+
+function fillInfo(ev) {
+  const panel = $("#info-panel");
+  panel.replaceChildren(h("h3", null, "Why were the stations closed?"));
+  if (!ev || ev.error || !ev.sources) {
+    panel.append(h("p", null, "The closure details could not be loaded from the graph."));
+    return;
+  }
+  panel.append(
+    h("p", "info-when", `${ev.reported_count || ev.closed_count} stations reported closed, ${ev.date}`),
+    ev.reported_count && ev.matched_count < ev.reported_count
+      ? h("p", "muted", `${ev.matched_count} of them appear in the 2023 timetable data used here.`)
+      : null,
+    h("p", null, ev.reason),
+    h("p", null, "Sources: ", ev.sources.flatMap((u, i) => [i ? ", " : "", sourceLink(u)])),
+    h("p", "muted", "This page shows how the closure changed travel on the metro. It takes no position on the event itself.")
+  );
+}
+
+function setupInfo() {
+  const btn = $("#info-btn"), panel = $("#info-panel");
+  const setOpen = (open) => { panel.hidden = !open; btn.setAttribute("aria-expanded", String(open)); };
+  btn.addEventListener("click", () => setOpen(panel.hidden));
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !panel.hidden) { setOpen(false); btn.focus(); }
+  });
+  fetch("/api/event").then((r) => r.json()).then(fillInfo).catch(() => fillInfo(null));
+}
+setupInfo();
+
+async function ask(question) {
+  const go = $("#go");
+  go.disabled = true;
+  go.textContent = "Walking the graph\u2026";
+  $("#output").replaceChildren(h("p", "busy", "Looking this up in the graph."));
+  try {
+    const res = await fetch("/api/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question })
+    });
+    render(await res.json());
+  } catch (e) {
+    render({ error: "The server did not respond. Check that app.py is still running." });
+  } finally {
+    go.disabled = false;
+    go.textContent = "Ask";
+  }
+}
+
+$("#ask-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const q = $("#question").value.trim();
+  if (q) ask(q);
+});
+EXAMPLES.forEach((q) => {
+  const b = h("button", null, q);
+  b.type = "button";
+  b.addEventListener("click", () => { $("#question").value = q; ask(q); });
+  $("#examples").append(h("li", null, b));
+});
+</script>
+</body>
+</html>
