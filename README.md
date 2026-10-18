@@ -2,13 +2,19 @@
 
 **Graph Hacks submission. Track entered: Track 1, Agents That Act on Connected Data.**
 
-Team: Nilesh Thipe (solo entry) · Demo video: submitted with the Graph Hacks entry · Live demo: not deployed; complete local setup instructions are below
+Team: Nilesh Thipe (solo entry) · [Demo video](https://youtu.be/gkXa_tMcAOI) (best in 1080p) · [Live demo](https://metromarg-graphhacks-2026.onrender.com/) · [Source code](https://github.com/nilesh0199/MetroMarg-GraphHacks-2026)
 
 MetroMarg is an agent that answers one question from a graph of the Delhi Metro: **how did the entry and exit closure at 45 stations on 9 to 10 October 2026 change the way to Jantar Mantar?**
 
 It reports what DMRC announced and what the timetable data implies. It takes no position on the event itself.
 
 **Data acknowledgment:** timetable data is the DMRC static GTFS feed from [Delhi Open Transit Data](https://otd.delhi.gov.in/data/staticDMRC/), a platform of the Department of Transport, GNCTD, with IIIT-Delhi (version last updated 10 August 2023). This project is not endorsed by DMRC or the Department of Transport. See `DATA_SOURCE.md`.
+
+## Try the live demo
+
+Open https://metromarg-graphhacks-2026.onrender.com/ and click one of the example questions.
+
+**Please allow up to a minute, sometimes longer, for an answer.** The answers are written by an AI language model (Gemini), and its replies can be slow, especially when it is busy. The site also runs on a free hosting plan that sleeps when idle, so the first visit can take about a minute to wake up. The time each graph tool took is shown under "What the agent called" on every answer. If the language model is unavailable, the page shows a clearly labelled saved answer for the example questions.
 
 ## Why I built this
 
@@ -106,6 +112,7 @@ From DMRC's update of 9 October 2026 as reported in the press: entry and exit cl
 
 ## Limitations
 
+- Answers can take up to a minute or more, because the AI language model can be slow or busy (see "Try the live demo").
 - The timetable is from 2023. Two of the 45 reported stations (Yamuna Vihar, Khajuri Khas) are not in it, so 43 of 45 are modelled.
 - Walking times are estimates from straight-line distance (× 1.3, at 4.5 km/h). Buses, taxis and other road transport are not modelled, so long walking times are not real recommendations.
 - Ride times have no waiting time or interchange walking time.
@@ -136,6 +143,10 @@ Open http://localhost:8000. FalkorDB Browser is at http://localhost:3000 (graph 
 
 By default the app connects to FalkorDB on `localhost:6379`. To use another instance, such as FalkorDB Cloud, set `FALKORDB_HOST` and `FALKORDB_PORT`, and if needed `FALKORDB_USERNAME`, `FALKORDB_PASSWORD` and `FALKORDB_SSL=1`, before running `import_gtfs.py` and `app.py`. When hosting, also set `HOST=0.0.0.0` and `PORT`, and keep `GEMINI_API_KEY` as a secret on the host, never in the code.
 
+### Deployment
+
+The live demo runs on Render as a Python web service (start command `python app.py`), with the graph hosted on FalkorDB Cloud (Free plan). All settings are environment variables, and no keys or passwords are stored in this repository.
+
 ### MCP server
 
 `mcp_server.py` exposes the same five tools over MCP. Test it with `npx @modelcontextprotocol/inspector python mcp_server.py`, or add it to an MCP client:
@@ -160,4 +171,4 @@ I can explain the graph model, the queries and the architecture.
 
 ## Files
 
-`import_gtfs.py` builds the graph · `tools.py`, `routing.py` hold the Cypher tools · `agent.py` is the model loop and answer check · `app.py` and `index.html` are the web app · `mcp_server.py` is the MCP wrapper · `cli.py` is the terminal version.
+`import_gtfs.py` builds the graph · `tools.py`, `routing.py` hold the Cypher tools · `agent.py` is the model loop and answer check · `app.py` and `index.html` are the web app · `mcp_server.py` is the MCP wrapper · `cli.py` is the terminal version · `inspect_gtfs.py` prints the structure of the timetable zip · `dmrc_gtfs.zip` and `DATA_SOURCE.md` hold the data and its attribution · `answer_cache.json` holds the saved answers.
